@@ -1,0 +1,6 @@
+{
+  "name": "stablecoin-evm",
+  "image": "node:20.18.0-bullseye",
+  "postCreateCommand": "git config --global --add safe.directory /workspaces/stablecoin-evm && git config --global --add safe.directory /workspaces/stablecoin-evm/lib/forge-std && yarn install",
+  "forwardPorts": [8545]
+}
