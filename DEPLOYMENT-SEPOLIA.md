@@ -1,0 +1,46 @@
+yarn forge:broadcast scripts/deploy/deploy-fiat-token.s.sol --rpc-url https://sepolia.infura.io/v3/ef85b5eef20c4a718402d13c7608fbf8
+
+== Return ==
+0: contract FiatTokenV2_2 0x502f6D6fA1b39A793325AA6eF7ED8AC20Ea136aD
+1: contract MasterMinter 0x1e25A810EEA1441e9F952d92b30A3B4b1e087806
+2: contract FiatTokenProxy 0x70B2aa12BC36399F84e00Ac72Aa8A9042F53D8d2
+
+== Logs ==
+TOKEN_NAME: 'USDC'
+TOKEN_SYMBOL: 'USDC'
+TOKEN_CURRENCY: 'USD'
+TOKEN_DECIMALS: '6'
+FIAT_TOKEN_IMPLEMENTATION_ADDRESS: '0x0000000000000000000000000000000000000000'
+PROXY_ADMIN_ADDRESS: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+MASTER_MINTER_OWNER_ADDRESS: '0x1269FB8D3C8712c3A70f4d3aF5Dc1DDa314d1532'
+OWNER_ADDRESS: '0xe485036b586a849ad62E0693BBC6E0ff02dAB8ef'
+PAUSER_ADDRESS: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65'
+BLACKLISTER_ADDRESS: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc'
+
+cast send 0x1e25A810EEA1441e9F952d92b30A3B4b1e087806 \
+  "configureController(address,address)" \
+  0xe485036b586a849ad62E0693BBC6E0ff02dAB8ef \
+  0xe485036b586a849ad62E0693BBC6E0ff02dAB8ef \
+  --rpc-url https://sepolia.infura.io/v3/ef85b5eef20c4a718402d13c7608fbf8 \
+  --private-key b4e76f94042c3eb1948de99ced47e6cdbbc1b3b4134f9e62e905852d8d0c5c71 \
+  --legacy
+
+cast send 0x1e25A810EEA1441e9F952d92b30A3B4b1e087806 \
+  "configureMinter(uint256)" \
+  10000000000000 \
+  --rpc-url https://sepolia.infura.io/v3/ef85b5eef20c4a718402d13c7608fbf8 \
+  --private-key c1b3f7018b1151d94a119c91253980dd0ea9e603b5db3cde9c4154bf7ada79b4 \
+  --legacy
+
+cast send 0x70B2aa12BC36399F84e00Ac72Aa8A9042F53D8d2 \
+  "mint(address,uint256)" \
+  0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+  1000000000000 \
+  --rpc-url https://sepolia.infura.io/v3/ef85b5eef20c4a718402d13c7608fbf8 \
+  --private-key c1b3f7018b1151d94a119c91253980dd0ea9e603b5db3cde9c4154bf7ada79b4 \
+  --legacy
+
+cast call 0x70B2aa12BC36399F84e00Ac72Aa8A9042F53D8d2 \
+  "balanceOf(address)" \
+  0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+  --rpc-url https://sepolia.infura.io/v3/ef85b5eef20c4a718402d13c7608fbf8
