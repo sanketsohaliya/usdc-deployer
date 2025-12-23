@@ -24,7 +24,8 @@
     "solhint": "solhint 'contracts/**/*.sol'",
     "static-check": "yarn hardhat typechain && yarn typecheck && yarn lint && yarn fmt:check && yarn solhint",
     "test": "NODE_OPTIONS=--max-old-space-size=8192 hardhat test",
-    "typecheck": "tsc -p . --noEmit"
+    "typecheck": "tsc -p . --noEmit",
+    "web": "cd web && npm run dev"
   },
   "repository": {
     "type": "git",
