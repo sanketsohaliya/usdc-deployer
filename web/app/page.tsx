@@ -24,12 +24,11 @@ export default function Home() {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const [mounted, setMounted] = useState(false);
-  const [currentDate, setCurrentDate] = useState<string>('');
+  const [isCopied, setIsCopied] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    setCurrentDate(new Date().toLocaleDateString());
   }, []);
 
   const [formData, setFormData] = useState({
@@ -56,6 +55,8 @@ export default function Home() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   const deploy = async () => {
@@ -212,8 +213,8 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] uppercase tracking-wider text-gray-500 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50"></span>
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-wider text-gray-300 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
               Sepolia Testnet
             </div>
             {mounted ? (
@@ -227,21 +228,30 @@ export default function Home() {
               ) : (
                 <div className="group flex items-center gap-3 bg-black/40 rounded-lg px-4 py-1.5 border border-white/10 transition-colors hover:border-white/20">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
-                  <span className="text-sm font-mono text-gray-300">
+                  <span className="text-sm font-mono text-gray-200">
                     {address?.slice(0, 6)}...{address?.slice(-4)}
                   </span>
                   <button 
                     onClick={() => address && copyToClipboard(address)}
-                    className="text-gray-600 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
                     title="Copy Address"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-                    </svg>
+                    {isCopied ? (
+                      <>
+                        <span className="text-[10px] text-green-500 font-sans font-medium">Copied!</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-green-500">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      </>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                      </svg>
+                    )}
                   </button>
                   <button
                     onClick={() => disconnect()}
-                    className="ml-1 text-gray-600 hover:text-red-400 transition-colors"
+                    className="ml-1 text-gray-400 hover:text-red-400 transition-colors"
                     title="Disconnect"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
@@ -263,7 +273,7 @@ export default function Home() {
         <div className="lg:col-span-7 space-y-8">
           <div>
             <h1 className="text-3xl font-semibold text-white mb-2 tracking-tight">New Deployment</h1>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-lg">
+            <p className="text-gray-400 text-sm leading-relaxed max-w-lg">
               Configure and deploy a fiat-backed stablecoin compliant with the USDC v2.2 standard on the Sepolia network.
             </p>
           </div>
@@ -272,7 +282,7 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 ml-1">Token Name</label>
+                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 ml-1">Token Name</label>
                 <input
                   type="text"
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 focus:bg-black transition-colors placeholder:text-gray-800"
@@ -283,7 +293,7 @@ export default function Home() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 ml-1">Token Symbol</label>
+                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 ml-1">Token Symbol</label>
                 <input
                   type="text"
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 focus:bg-black transition-colors placeholder:text-gray-800"
@@ -294,7 +304,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 ml-1">Currency</label>
+                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 ml-1">Currency</label>
                 <input
                   type="text"
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 focus:bg-black transition-colors placeholder:text-gray-800"
@@ -305,7 +315,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 ml-1">Decimals</label>
+                <label className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 ml-1">Decimals</label>
                 <input
                   type="number"
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 focus:bg-black transition-colors placeholder:text-gray-800"
@@ -317,11 +327,11 @@ export default function Home() {
 
             <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
                <div className="flex items-start gap-3 p-4 rounded-lg bg-white/[0.02] border border-white/5">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 mt-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 mt-0.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                   </svg>
                   <div className="text-xs text-gray-400 leading-relaxed">
-                    <p className="mb-1 text-gray-300 font-medium">Auto-assigned Roles</p>
+                    <p className="mb-1 text-gray-200 font-medium">Auto-assigned Roles</p>
                     The connected wallet will automatically be assigned as <strong>Owner</strong>, <strong>Pauser</strong>, <strong>Blacklister</strong>, and <strong>MasterMinter</strong>.
                   </div>
                </div>
@@ -359,20 +369,20 @@ export default function Home() {
         {/* Right Column: Logs */}
         <div className="lg:col-span-5">
            <div className="flex items-center justify-between mb-2 px-1">
-             <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Output Console</h2>
-             <span className="text-[10px] text-gray-700 font-mono">/var/log/deployment</span>
+             <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-300">Deployment Progress</h2>
+             <span className="text-[10px] text-gray-400 font-sans italic opacity-70">Real-time status updates</span>
            </div>
           <div className="h-[600px] bg-black border border-white/10 rounded-xl overflow-hidden flex flex-col shadow-2xl relative">
             {/* Simple Header */}
-            <div className="px-4 py-2 bg-white/[0.02] border-b border-white/5 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gray-700"></div>
-              <span className="text-[10px] font-mono text-gray-600">bash</span>
+            <div className="px-4 py-2 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Logs</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
             </div>
             
             <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-2 scrollbar-hide">
               {logs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-gray-800 pointer-events-none">
-                  <span className="opacity-50 text-[10px] uppercase tracking-widest">Ready to deploy</span>
+                  <span className="opacity-50 text-[10px] uppercase tracking-widest">Waiting for process start...</span>
                 </div>
               ) : (
                 logs.map((log, i) => (
@@ -388,9 +398,9 @@ export default function Home() {
             </div>
 
             {/* Footer status */}
-            <div className="px-4 py-1.5 bg-white/[0.02] border-t border-white/5 text-[9px] text-gray-600 font-mono flex justify-between uppercase tracking-wider">
-               <span>Status: {isDeploying ? <span className="text-blue-500">Active</span> : 'Idle'}</span>
-               <span>{currentDate}</span>
+            <div className="px-4 py-2 bg-white/[0.02] border-t border-white/5 text-[9px] text-gray-400 font-mono flex justify-between uppercase tracking-wider">
+               <span>System Status: {isDeploying ? <span className="text-blue-500 animate-pulse">Processing</span> : <span className="text-green-600/70">Ready</span>}</span>
+               <span>v2.2.0</span>
             </div>
           </div>
         </div>
