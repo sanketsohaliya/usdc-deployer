@@ -1,173 +1,78 @@
+# USDC Deployer
+
+This project is a comprehensive tool for deploying and managing USDC smart contracts on EVM-compatible blockchains. It consists of the official Circle USDC smart contracts and a modern web interface to facilitate easy deployment and interaction.
+
+## Project Overview
+
+- **Smart Contracts**: Core USDC contracts (forked from [Circle's stablecoin-evm](https://github.com/circlefin/stablecoin-evm)).
+- **Web Interface**: A Next.js-based dApp located in the `web/` directory that allows users to deploy and configure USDC instances via a GUI.
+
+## Quick Start
+
+### Web Interface (Frontend)
+
+To run the deployment interface locally:
+
+1. Navigate to the web directory:
+   ```bash
+   cd web
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Smart Contracts (Backend)
+
+The smart contracts are managed with Hardhat and Foundry.
+
+**Prerequisites:**
+- Node 20.9.0
+- Yarn 1.22.19
+- [Foundry](https://getfoundry.sh/)
+
+**Setup:**
+```bash
+# Install dependencies
+yarn install
+
+# Compile contracts
+yarn compile
+
+# Run tests
+yarn test
+```
+
+## Deployment
+
+### Web App (Vercel)
+The web interface is optimized for deployment on Vercel.
+1. Push this repository to GitHub.
+2. Import the project in Vercel.
+3. Set the **Root Directory** to `web`.
+4. Deploy.
+
+### Contracts (Manual)
+If you prefer to deploy contracts using the CLI scripts instead of the web interface, refer to the `scripts/` directory and the original documentation below.
+
+---
+
 <!-- prettier-ignore-start -->
 <!-- omit in toc -->
-# Circle's Stablecoin Smart Contracts on EVM-compatible blockchains
+# Circle's Stablecoin Smart Contracts (Original Documentation)
 <!-- prettier-ignore-end -->
+
+*The following documentation pertains to the underlying smart contracts used in this project.*
 
 This repository contains the smart contracts used by
 [Circle's](https://www.circle.com/) stablecoins on EVM-compatible blockchains.
 All contracts are written in [Solidity](https://soliditylang.org/) and managed
 by the [Hardhat](https://hardhat.org/) framework.
-
-<!-- prettier-ignore-start -->
-<!-- omit in toc -->
-## Table of contents
-<!-- prettier-ignore-end -->
-
-- [Setup](#setup)
-  - [Development Environment](#development-environment)
-  - [IDE](#ide)
-- [Development](#development)
-  - [TypeScript type definition files for the contracts](#typescript-type-definition-files-for-the-contracts)
-  - [Linting and Formatting](#linting-and-formatting)
-  - [Testing](#testing)
-- [Deployment](#deployment)
-- [Contracts](#contracts)
-- [FiatToken features](#fiattoken-features)
-  - [ERC20 compatible](#erc20-compatible)
-  - [Pausable](#pausable)
-  - [Upgradable](#upgradable)
-  - [Blacklist](#blacklist)
-  - [Minting/Burning](#mintingburning)
-  - [Ownable](#ownable)
-- [Additional Documentations](#additional-documentations)
-
-## Setup
-
-### Development Environment
-
-Requirements:
-
-- Node 20.9.0
-- Yarn 1.22.19
-- [Foundry@f625d0f](https://github.com/foundry-rs/foundry/releases/tag/nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9)
-
-```sh
-$ nvm use
-$ npm i -g yarn@1.22.19 # Install yarn if you don't already have it
-$ yarn install          # Install npm packages and other dependencies listed in setup.sh
-```
-
-### IDE
-
-We recommend using VSCode for the project here with these
-[extensions](./.vscode/extensions.json) installed.
-
-## Development
-
-### TypeScript type definition files for the contracts
-
-Types are automatically generated as a part of contract compilation:
-
-```sh
-$ yarn compile
-```
-
-To generate typing without re-compiling, run
-
-```sh
-$ yarn hardhat typechain
-```
-
-### Linting and Formatting
-
-To check code for problems:
-
-```sh
-$ yarn static-check   # Runs a static check on the repo.
-```
-
-or run the checks individually:
-
-```sh
-$ yarn typecheck      # Type-check TypeScript code
-$ yarn lint           # Check JavaScript and TypeScript code
-$ yarn lint --fix     # Fix problems where possible
-$ yarn solhint        # Check Solidity code
-```
-
-To auto-format code:
-
-```sh
-$ yarn fmt
-```
-
-### Testing
-
-Run all tests:
-
-```sh
-$ yarn test
-```
-
-To run tests in a specific file, run:
-
-```sh
-$ yarn test [path/to/file]
-```
-
-To run tests and generate test coverage, run:
-
-```sh
-$ yarn coverage
-```
-
-To check the size of contracts in the repo, run the following command.
-
-```sh
-$ yarn contract-size # Ignores tests
-```
-
-## Deployment
-
-1. Create a copy of the file `.env.example`, and name it `.env`. Fill in
-   appropriate values in the `.env` file. This file must not be checked into the
-   repository.
-
-```sh
-cp .env.example .env
-```
-
-2. Create a `blacklist.remote.json` file and populate it with a list of
-   addresses to be blacklisted. This file must not be checked into the
-   repository.
-
-```sh
-echo "[]" > blacklist.remote.json
-```
-
-3. Simulate a deployment by running the following command
-
-```sh
-yarn forge:simulate scripts/deploy/deploy-fiat-token.s.sol --rpc-url <testnet OR mainnet>
-```
-
-4. Validate that all transactions to be broadcasted are filled in with the
-   correct values
-5. Deploy the contracts by running the following command
-
-```sh
-yarn forge:broadcast scripts/deploy/deploy-fiat-token.s.sol --rpc-url <testnet OR mainnet>
-```
-
-6. Verify the contracts on an Etherscan flavored block explorer by running the
-   following command. Ensure that `ETHERSCAN_KEY` is set in the `.env` file.
-
-```sh
-yarn forge:verify scripts/deploy/deploy-fiat-token.s.sol --rpc-url <testnet OR mainnet>
-```
-
-## Contracts
-
-The FiatToken contracts adheres to OpenZeppelin's
-[Proxy Upgrade Pattern](https://docs.openzeppelin.com/upgrades-plugins/1.x/proxies)
-([permalink](https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/65cf285bd36af24570186ca6409341540c67238a/docs/modules/ROOT/pages/proxies.adoc#L1)).
-There are 2 main contracts - an implementation contract
-([`FiatTokenV2_2.sol`](./contracts/v2/FiatTokenV2_2.sol)) that contains the main
-logic for FiatToken's functionalities, and a proxy contract
-([`FiatTokenProxy.sol`](./contracts/v1/FiatTokenProxy.sol)) that redirects
-function calls to the implementation contract. This allows upgrading FiatToken's
-functionalities, as a new implementation contact can be deployed and the Proxy
-can be updated to point to it.
 
 ## FiatToken features
 
@@ -212,12 +117,6 @@ the `masterMinter`.
 The contract has an Owner, who can change the `owner`, `pauser`, `blacklister`,
 or `masterMinter` addresses. The `owner` can not change the `proxyOwner`
 address.
-
-### Bridge USDC Standard
-
-Deploying bridged USDC involves additional requirements. For detailed guidance,
-please refer to the [Bridged USDC Standard](./doc/bridged_USDC_standard.md)
-guide rather than the general README.
 
 ## Additional Documentations
 
