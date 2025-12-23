@@ -376,24 +376,51 @@ export default function Home() {
                                 <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                               </div>
                               
-                              <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-2 scrollbar-hide">
-                                {logs.length === 0 ? (
-                                  <div className="h-full flex flex-col items-center justify-center text-gray-800 pointer-events-none">
-                                    <span className="opacity-50 text-[10px] uppercase tracking-widest">Waiting for process start...</span>
-                                  </div>
-                                ) : (
-                                  logs.map((log, i) => (
-                                    <div key={i} className="break-all border-l-2 border-transparent hover:border-white/20 pl-2 py-0.5 transition-colors group">
-                                      <span className="text-gray-700 mr-2 select-none group-hover:text-gray-500">{(i + 1).toString().padStart(2, '0')}</span>
-                                      <span className={log.includes('Error') ? 'text-red-400' : 'text-gray-100'}>
-                                        {log}
-                                      </span>
-                                    </div>
-                                  ))
-                                )}
-                                <div ref={logsEndRef} />
-                              </div>
-                  
+                                          <div className="flex-1 p-4 overflow-y-auto font-mono text-[11px] leading-relaxed space-y-1.5 scrollbar-hide">
+                                            {logs.length === 0 ? (
+                                              <div className="h-full flex flex-col items-center justify-center text-gray-800 pointer-events-none">
+                                                <span className="opacity-50 text-[10px] uppercase tracking-widest">Waiting for process start...</span>
+                                              </div>
+                                            ) : (
+                                              logs.map((log, i) => {
+                                                const isError = log.toLowerCase().includes('error');
+                                                const isTx = log.includes('tx hash:');
+                                                const isAddress = log.includes('at:') || log.includes('Address:');
+                                                const isSuccess = log.includes('SUCCESS') || log.includes('COMPLETE') || log.includes('successfully');
+                                                const isStep = log.startsWith('[');
+                              
+                                                return (
+                                                  <div key={i} className="flex gap-3 group border-l border-transparent hover:border-white/10 pl-2 transition-colors">
+                                                    <span className="text-gray-700 select-none w-5 shrink-0 group-hover:text-gray-500">{(i + 1).toString().padStart(2, '0')}</span>
+                                                    
+                                                    <div className="flex-1 break-all">
+                                                      {isError && <span className="text-red-500 mr-2">✖</span>}
+                                                      {isSuccess && <span className="text-green-500 mr-2">✔</span>}
+                                                      {!isError && !isSuccess && <span className="text-blue-500/50 mr-2">→</span>}
+                                                      
+                                                      <span className={`
+                                                        ${isError ? 'text-red-400' : ''}
+                                                        ${isSuccess ? 'text-green-400 font-bold' : ''}
+                                                        ${!isError && !isSuccess ? 'text-gray-100' : ''}
+                                                      `}>
+                                                        {log.split(':').map((part, index, array) => {
+                                                          if (index === array.length - 1 && (isTx || isAddress)) {
+                                                            return (
+                                                              <span key={index} className="text-blue-400/90 font-mono bg-blue-500/5 px-1 rounded ml-1">
+                                                                {part}
+                                                              </span>
+                                                            );
+                                                          }
+                                                          return (index > 0 ? ':' : '') + part;
+                                                        })}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })
+                                            )}
+                                            <div ref={logsEndRef} />
+                                          </div>                  
                               {/* Footer status */}
                               <div className="px-4 py-2 bg-white/[0.02] border-t border-white/5 text-[9px] text-gray-400 font-mono flex justify-between uppercase tracking-wider">
                                  <span>System Status: {isDeploying ? <span className="text-blue-500 animate-pulse">Processing</span> : <span className="text-green-600/70">Ready</span>}</span>
