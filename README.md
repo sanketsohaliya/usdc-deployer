@@ -1,5 +1,7 @@
 # USDC Deployer
 
+**Live Demo: [https://usdc-deployer.vercel.app/](https://usdc-deployer.vercel.app/)**
+
 This project is a comprehensive tool for deploying and managing USDC smart contracts on EVM-compatible blockchains. It consists of the official Circle USDC smart contracts and a modern web interface to facilitate easy deployment and interaction.
 
 ## Project Overview
