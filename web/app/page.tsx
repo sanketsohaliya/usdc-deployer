@@ -15,6 +15,8 @@ type Artifact = {
   bytecode: string | { object: string };
 };
 
+const PROXY_ADMIN_ADDRESS = '0x1269FB8D3C8712c3A70f4d3aF5Dc1DDa314d1532' as Address;
+
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -32,26 +34,7 @@ export default function Home() {
     tokenSymbol: 'USDC',
     currency: 'USD',
     decimals: '6',
-    proxyAdmin: '',
-    masterMinterOwner: '',
-    owner: '',
-    pauser: '',
-    blacklister: '',
   });
-
-  // Pre-fill addresses with connected wallet
-  useEffect(() => {
-    if (address && !formData.owner) {
-      setFormData(prev => ({
-        ...prev,
-        proxyAdmin: prev.proxyAdmin || address,
-        masterMinterOwner: prev.masterMinterOwner || address,
-        owner: prev.owner || address,
-        pauser: prev.pauser || address,
-        blacklister: prev.blacklister || address,
-      }));
-    }
-  }, [address, isConnected]);
 
   const [logs, setLogs] = useState<string[]>([]);
   const [isDeploying, setIsDeploying] = useState(false);
@@ -69,7 +52,10 @@ export default function Home() {
   }
 
   const deploy = async () => {
-    if (!walletClient || !publicClient) return;
+    if (!walletClient || !publicClient || !address) {
+      addLog("Please connect your wallet first.");
+      return;
+    }
     setIsDeploying(true);
     setLogs([]);
     addLog('Starting deployment...');
@@ -134,31 +120,27 @@ export default function Home() {
       addLog(`MasterMinter deployed at: ${mmAddress}`);
       setDeployedAddresses(prev => ({ ...prev, masterMinter: mmAddress }));
 
-      // 6. Transfer MasterMinter Ownership
-      addLog(`Transferring MasterMinter ownership to ${formData.masterMinterOwner}...`);
+      // 6. Transfer MasterMinter Ownership to connected wallet
+      addLog(`Transferring MasterMinter ownership to ${address}...`);
       const mmContract = getContract({
         address: mmAddress,
         abi: MasterMinterArtifact.abi,
         client: { public: publicClient, wallet: walletClient }
       });
-      const tx1 = await mmContract.write.transferOwnership([formData.masterMinterOwner as Address]);
+      const tx1 = await mmContract.write.transferOwnership([address]);
       await publicClient.waitForTransactionReceipt({ hash: tx1 });
       addLog('MasterMinter ownership transferred.');
 
-      // 7. Change Proxy Admin
-      addLog(`Changing Proxy Admin to ${formData.proxyAdmin}...`);
+      // 7. Change Proxy Admin to hardcoded address
+      addLog(`Changing Proxy Admin to ${PROXY_ADMIN_ADDRESS}...`);
       const proxyContract = getContract({
         address: proxyAddress,
         abi: FiatTokenProxyArtifact.abi, // Proxy ABI has changeAdmin
         client: { public: publicClient, wallet: walletClient }
       });
-      const tx2 = await proxyContract.write.changeAdmin([formData.proxyAdmin as Address]);
+      const tx2 = await proxyContract.write.changeAdmin([PROXY_ADMIN_ADDRESS]);
       await publicClient.waitForTransactionReceipt({ hash: tx2 });
       addLog('Proxy Admin changed.');
-
-      if (formData.proxyAdmin.toLowerCase() === address?.toLowerCase()) {
-        addLog("CRITICAL: You are now the Proxy Admin. You cannot call 'initialize' via the Proxy because the Proxy will intercept the call. Initialization steps will likely fail. You should have used a different address for Proxy Admin.");
-      }
 
       // 8. Initialize (V1, V2, V2_1, V2_2)
       const proxyAsV2_2 = getContract({
@@ -174,9 +156,9 @@ export default function Home() {
         formData.currency,
         parseInt(formData.decimals),
         mmAddress,
-        formData.pauser as Address,
-        formData.blacklister as Address,
-        formData.owner as Address
+        address, // pauser
+        address, // blacklister
+        address  // owner
       ]);
       await publicClient.waitForTransactionReceipt({ hash: tx3 });
       addLog('Initialized V1.');
@@ -187,7 +169,7 @@ export default function Home() {
       addLog('Initialized V2.');
 
       addLog('Initializing V2_1...');
-      const tx5 = await proxyAsV2_2.write.initializeV2_1([formData.owner as Address]);
+      const tx5 = await proxyAsV2_2.write.initializeV2_1([address]);
       await publicClient.waitForTransactionReceipt({ hash: tx5 });
       addLog('Initialized V2_1.');
 
@@ -197,10 +179,12 @@ export default function Home() {
       addLog('Initialized V2_2.');
 
       addLog('DEPLOYMENT COMPLETE!');
+      addLog(`🎉 Your token is deployed at proxy address: ${proxyAddress}`);
+
 
     } catch (e: any) {
       console.error(e);
-      addLog(`Error: ${e.message || e}`);
+      addLog(`Error: ${e.shortMessage || e.message || e}`);
     } finally {
       setIsDeploying(false);
     }
@@ -211,7 +195,7 @@ export default function Home() {
     <div className="min-h-screen p-8 bg-gray-50 text-gray-900 font-sans">
       <main className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
         <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">USDC Deployer (Sepolia)</h1>
-
+        
         <div className="mb-6 flex justify-center h-16">
           {mounted ? (
             !isConnected ? (
@@ -281,61 +265,11 @@ export default function Home() {
             </div>
           </div>
 
-          <hr />
-          
-          <h3 className="font-semibold text-lg">Addresses</h3>
-          <p className="text-xs text-gray-500 mb-2">Defaults to connected wallet. Change Proxy Admin to a different address!</p>
-          
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-red-600">Proxy Admin Address (IMPORTANT: Must NOT be Deployer)</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded border-red-200"
-              value={formData.proxyAdmin}
-              onChange={e => setFormData({ ...formData, proxyAdmin: e.target.value })}
-            />
+          <hr/>
+          <div className='text-xs text-gray-600 bg-gray-50 p-3 rounded-lg'>
+              <p><span className='font-bold'>Owner Roles:</span> The connected wallet <span className='font-mono text-blue-700'>{address ? `${address.slice(0,10)}...` : '...'}</span> will be set as the Owner, Pauser, Blacklister, and MasterMinter Owner.</p>
+              <p className='mt-2'><span className='font-bold'>Proxy Admin:</span> The Proxy Admin will be set to a fixed address: <span className='font-mono text-blue-700'>{PROXY_ADMIN_ADDRESS.slice(0,10)}...</span></p>
           </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-1">Master Minter Owner</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded"
-              value={formData.masterMinterOwner}
-              onChange={e => setFormData({ ...formData, masterMinterOwner: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-1">Owner Address</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded"
-              value={formData.owner}
-              onChange={e => setFormData({ ...formData, owner: e.target.value })}
-            />
-          </div>
-          
-           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-1">Pauser Address</label>
-              <input
-                type="text"
-                className="w-full border p-2 rounded"
-                value={formData.pauser}
-                onChange={e => setFormData({ ...formData, pauser: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-1">Blacklister Address</label>
-              <input
-                type="text"
-                className="w-full border p-2 rounded"
-                value={formData.blacklister}
-                onChange={e => setFormData({ ...formData, blacklister: e.target.value })}
-              />
-            </div>
-           </div>
 
           <button
             onClick={deploy}
