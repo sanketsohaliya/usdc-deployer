@@ -13,6 +13,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button, 
+[role="button"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* Custom Scrollbar for Logs */
 ::-webkit-scrollbar {
   width: 8px;
