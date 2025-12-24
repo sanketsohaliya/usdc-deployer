@@ -23,7 +23,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 // Hardhat extensions
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-ethers";
-import "@nomicfoundation/hardhat-foundry";
+// import "@nomicfoundation/hardhat-foundry";
 import "@nomiclabs/hardhat-truffle5";
 import "@typechain/hardhat";
 import "hardhat-contract-sizer";
